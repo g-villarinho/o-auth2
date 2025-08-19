@@ -174,7 +174,7 @@ sequenceDiagram
 ### 1. Clonar o Repositório
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/g-villarinho/o-auth2.git
 cd o-auth2
 ```
 
