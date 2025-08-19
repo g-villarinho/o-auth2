@@ -1,0 +1,215 @@
+---
+description: 
+globs: *.tsx
+alwaysApply: false
+---
+# Padrões de Componentes React
+
+## 📁 Nomenclatura de Arquivos
+
+- **Kebab Case**: Todos os arquivos `.tsx` devem seguir o padrão kebab-case
+  ```typescript
+  // ✅ Correto
+  user-profile.tsx
+  form-input.tsx
+  navigation-menu.tsx
+  
+  // ❌ Incorreto
+  UserProfile.tsx
+  formInput.tsx
+  NavigationMenu.tsx
+  ```
+
+## 🏗️ Estrutura de Componentes
+
+### Export Function (Nunca Arrow Function)
+```typescript
+// ✅ Correto
+export function UserProfile() {
+  return <div>...</div>
+}
+
+// ❌ Incorreto
+export const UserProfile = () => {
+  return <div>...</div>
+}
+
+export default function UserProfile() {
+  return <div>...</div>
+}
+```
+
+### Funções Named (Não Arrow Functions)
+```typescript
+// ✅ Correto
+export function UserProfile() {
+  function handleSubmit(event: FormEvent) {
+    // lógica aqui
+  }
+  
+  function handleInputChange(value: string) {
+    // lógica aqui
+  }
+  
+  return <div>...</div>
+}
+
+// ❌ Incorreto
+export function UserProfile() {
+  const handleSubmit = (event: FormEvent) => {
+    // lógica aqui
+  }
+  
+  return <div>...</div>
+}
+```
+
+**Exceção**: Hooks como `useCallback`, `useEffect`, `useMemo` podem usar arrow functions como parâmetros.
+
+## 🏷️ Nomenclatura de Variáveis
+
+- **Descritivas**: Use nomes que descrevam claramente o propósito
+```typescript
+// ✅ Correto
+const [isLoading, setIsLoading] = useState(false)
+const [userData, setUserData] = useState(null)
+const [formErrors, setFormErrors] = useState({})
+
+// ❌ Incorreto
+const [loading, setLoading] = useState(false)
+const [data, setData] = useState(null)
+const [errors, setErrors] = useState({})
+```
+
+## 🧹 Limpeza de Código
+
+### Ternários Limitados
+```typescript
+// ✅ Correto - Máximo 1 ternário
+{isLoading ? <Spinner /> : <Content />}
+
+// ❌ Incorreto - Ternários aninhados
+{isLoading ? 
+  (hasError ? <Error /> : <Spinner />) : 
+  (isSuccess ? <Success /> : <Content />)
+}
+```
+
+### Separação de Subcomponentes
+```typescript
+// ✅ Correto - Arquivo separado
+// user-profile-header.tsx
+export function UserProfileHeader() {
+  return <header>...</header>
+}
+
+// user-profile.tsx
+import { UserProfileHeader } from './user-profile-header'
+
+export function UserProfile() {
+  return (
+    <div>
+      <UserProfileHeader />
+      {/* resto do componente */}
+    </div>
+  )
+}
+
+// ❌ Incorreto - Subcomponente aninhado
+export function UserProfile() {
+  function UserProfileHeader() {
+    return <header>...</header>
+  }
+  
+  return (
+    <div>
+      <UserProfileHeader />
+    </div>
+  )
+}
+```
+
+## 🎨 Classes CSS
+
+### Sempre use `cn()` para classes condicionais
+```typescript
+import { cn } from '@/lib/utils'
+
+// ✅ Correto
+<div className={cn(
+  "base-class",
+  isActive && "active-class",
+  isDisabled && "disabled-class"
+)}>
+
+// ❌ Incorreto
+<div className={`base-class ${isActive ? 'active-class' : ''} ${isDisabled ? 'disabled-class' : ''}`}>
+```
+
+## 🎯 Gerenciamento de Estado
+
+### Minimize useStates
+```typescript
+// ✅ Correto - Estado consolidado
+const [formState, setFormState] = useState({
+  name: '',
+  email: '',
+  isLoading: false,
+  errors: {}
+})
+
+// ❌ Incorreto - Muitos useStates
+const [name, setName] = useState('')
+const [email, setEmail] = useState('')
+const [isLoading, setIsLoading] = useState(false)
+const [errors, setErrors] = useState({})
+```
+
+## 📝 Formulários
+
+### Zod + React Hook Form
+```typescript
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
+const formSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório'),
+  email: z.string().email('Email inválido')
+})
+
+export function UserForm() {
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      email: ''
+    }
+  })
+  
+  function handleSubmit(data: z.infer<typeof formSchema>) {
+    // lógica de submissão
+  }
+  
+  return (
+    <form onSubmit={form.handleSubmit(handleSubmit)}>
+      {/* campos do formulário */}
+    </form>
+  )
+}
+```
+
+## 📋 Checklist de Revisão
+
+Antes de finalizar um componente, verifique:
+
+- [ ] Arquivo segue kebab-case
+- [ ] Usa `export function` (não arrow function)
+- [ ] Funções internas são named functions
+- [ ] Variáveis têm nomes descritivos
+- [ ] Máximo 1 ternário por componente
+- [ ] Subcomponentes estão em arquivos separados
+- [ ] Classes condicionais usam `cn()`
+- [ ] Estados estão consolidados (mínimo de useStates)
+- [ ] Formulários usam Zod + React Hook Form
+- [ ] Prefere URL states sobre Context API quando possível
